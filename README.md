@@ -14,3 +14,8 @@
     npm run serve
 
 - Open frontend localhost server and enjoy the application.
+
+
+## General information
+
+- Accuweather's free account only allows up to 50 http requests to one API key. That means that getting current weather data and Accuweather forecast can only be done up to 50 times per day. If it stops working and responds error 500 then it is probably because of the daily limit.

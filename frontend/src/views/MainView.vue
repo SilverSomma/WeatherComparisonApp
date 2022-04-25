@@ -131,6 +131,27 @@
               data!
             </button>
           </div>
+          <div class="col">
+            <label>Request interval:</label>
+            <select v-model="automaticReportInterval" class="form-control">
+              <option value="300000">5 minutes</option>
+              <option value="900000">15 minutes</option>
+              <option value="1800000">30 minutes</option>
+              <option value="3600000">1 hour</option>
+              <option value="7200000">2 hours</option>
+            </select>
+          </div>
+          <div class="col">
+            <button type="button" class="btn btn-outline-info btn-lg" v-on:click="getWeatherCurrentAutomatic" v-if="!intervalRunning">
+              Start interval!
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-lg" v-on:click="stopInterval"
+                    v-if="intervalRunning">Stop interval!
+            </button>
+          </div>
+          <div class="col">
+            <h3 id="intervalTimer" v-if="intervalRunning" ></h3>
+          </div>
         </div>
       </form>
       <table class="table table-hover table-sm" v-if="currentTableVisible">
@@ -156,6 +177,10 @@
         </tbody>
       </table>
     </div>
+    <footer>
+
+    <h2>Powered by Silver Somma</h2>
+    </footer>
   </div>
 </template>
 
@@ -169,9 +194,9 @@ export default {
     return {
       weatherResponseCurrent: {},
       weatherResponseAccu: {},
-      weatherAccuDate: null,
+      weatherAccuDate: 5,
       weatherResponseApi: {},
-      weatherApiDate: null,
+      weatherApiDate: 3,
       accuTableVisible: false,
       apiTableVisible: false,
       currentTableVisible: false,
@@ -180,6 +205,10 @@ export default {
         lat: 59.436962,
         lng: 24.753574
       },
+      automaticReportInterval: 300000,
+      intervalId: null,
+      timerInterval:null,
+      intervalRunning: false
     }
   },
 
@@ -189,7 +218,7 @@ export default {
       this.$http.post("/accuweather", {
         dateRange: this.weatherAccuDate,
         latitude: this.latLng.lat,
-        longitude:this.latLng.lng
+        longitude: this.latLng.lng
       })
           .then(response => {
             this.weatherResponseAccu = response.data;
@@ -202,9 +231,9 @@ export default {
     getWeatherApi: function () {
 
       this.$http.post("/weatherapi", {
-         dateRange: this.weatherApiDate,
-        latitude: this.latLng.lat,
-        longitude:this.latLng.lng
+            dateRange: this.weatherApiDate,
+            latitude: this.latLng.lat,
+            longitude: this.latLng.lng
           }
       )
           .then(response => {
@@ -219,7 +248,7 @@ export default {
 
       this.$http.post("/current", {
         latitude: this.latLng.lat,
-        longitude:this.latLng.lng
+        longitude: this.latLng.lng
       })
           .then(response => {
             this.weatherResponseCurrent = response.data
@@ -230,13 +259,36 @@ export default {
           .catch(error => {
             console.log(error.response.data)
           })
+    },
+    timer:function(){
+      let seconds = this.automaticReportInterval/1000;
+      const self = this;
+      this.timerInterval = setInterval(function (){
+        let date = new Date(seconds * 1000).toISOString().substr(11, 8)
+        document.getElementById('intervalTimer').textContent = date;
+        seconds--;
+        if(seconds===-1){
+          seconds = self.automaticReportInterval/1000;
+        }
+      },1000)
+    },
+    getWeatherCurrentAutomatic: function () {
+      this.getWeatherCurrent();
+      this.intervalId = setInterval(this.getWeatherCurrent, this.automaticReportInterval);
+      this.timer();
+
+      this.intervalRunning = true;
+    },
+    stopInterval: function () {
+      clearInterval(this.intervalId);
+      clearInterval(this.timerInterval);
+      this.intervalRunning = false;
     }
   },
   mounted() {
     let mapOptions = {
       center: [58.876, 25.422],
-      zoom: 5,
-      draggable: true
+      zoom: 5
     }
 
     let map = new L.map('map', mapOptions);
@@ -284,8 +336,18 @@ h2 {
   margin-bottom: 3vh;
   font-size: 2em;
 }
+footer h2{
+  padding-left: 3vh;
+  padding-top: 4.5vh;
+  margin-bottom: 0;
+  padding-bottom:6vh;
+  text-align: center;
+  font-size:1em;
+  color: #f6d2b9;
+}
+
 #maph2 {
-  margin-bottom:0;
+  margin-bottom: 0;
 }
 
 form {
@@ -306,4 +368,12 @@ form button {
   width: 100%;
   height: 50vh;
 }
+
+.currentWeather-form {
+  width: 73vw;
+}
+form h3{
+  margin-top: 3vh;
+}
+
 </style>
