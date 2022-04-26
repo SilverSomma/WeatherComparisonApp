@@ -179,7 +179,7 @@
     </div>
     <footer>
 
-    <h2>Powered by Silver Somma</h2>
+    <h2></h2>
     </footer>
   </div>
 </template>
@@ -225,7 +225,8 @@ export default {
             this.accuTableVisible = true;
           })
           .catch(error => {
-            console.log(error)
+            console.log(error.response.data)
+            alert("Maximum limit of daily requests is crossed! Please try again later.")
           })
     },
     getWeatherApi: function () {
@@ -258,6 +259,7 @@ export default {
           })
           .catch(error => {
             console.log(error.response.data)
+            alert("Maximum limit of daily requests is crossed! Please try again later.")
           })
     },
     timer:function(){
